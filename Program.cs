@@ -11,6 +11,7 @@ WebHost.CreateDefaultBuilder(args)
         services.AddSingleton<login>();
         services.AddSingleton<register>();
         services.AddSingleton<editProfile>();
+        services.AddSingleton<forgotPassword>();
         services.AddSingleton<deleteProfile>();
 
         services.AddAuthorization();
@@ -39,6 +40,7 @@ WebHost.CreateDefaultBuilder(args)
             var login = endpoints.ServiceProvider.GetRequiredService<login>();
             var register = endpoints.ServiceProvider.GetRequiredService<register>();
             var editProfile = endpoints.ServiceProvider.GetRequiredService<editProfile>();
+            var forgotPassword = endpoints.ServiceProvider.GetRequiredService<forgotPassword>();
             var deleteProfile = endpoints.ServiceProvider.GetRequiredService<deleteProfile>();
 
             endpoints.MapGet("/login",
@@ -69,13 +71,21 @@ WebHost.CreateDefaultBuilder(args)
                     await http.Response.WriteAsJsonAsync(await editProfile.EditProfile(rData));
 
             });
-
-            endpoints.MapDelete("deleteProfile",
+            endpoints.MapPut("forgotPassword",
             [AllowAnonymous] async (HttpContext http) =>
             {
                 var body = await new StreamReader(http.Request.Body).ReadToEndAsync();
                 requestData rData = JsonSerializer.Deserialize<requestData>(body);
                 if (rData.eventID == "1004") // update
+                    await http.Response.WriteAsJsonAsync(await forgotPassword.ForgotPassword(rData));
+
+            });
+            endpoints.MapDelete("deleteProfile",
+            [AllowAnonymous] async (HttpContext http) =>
+            {
+                var body = await new StreamReader(http.Request.Body).ReadToEndAsync();
+                requestData rData = JsonSerializer.Deserialize<requestData>(body);
+                if (rData.eventID == "1005") // update
                     await http.Response.WriteAsJsonAsync(await deleteProfile.DeleteProfile(rData));
 
             });

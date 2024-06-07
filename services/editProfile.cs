@@ -10,7 +10,6 @@ namespace COMMON_PROJECT_STRUCTURE_API.services
     public class editProfile
     {
         dbServices ds = new dbServices();
-
         public async Task<responseData> EditProfile(requestData req)
         {
             responseData resData = new responseData();
