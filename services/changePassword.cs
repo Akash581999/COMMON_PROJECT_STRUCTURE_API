@@ -7,10 +7,10 @@ using MySql.Data.MySqlClient;
 
 namespace COMMON_PROJECT_STRUCTURE_API.services
 {
-    public class forgotPassword
+    public class changePassword
     {
         dbServices ds = new dbServices();
-        public async Task<responseData> ForgotPassword(requestData req)
+        public async Task<responseData> ChangePassword(requestData req)
         {
             responseData resData = new responseData();
 
