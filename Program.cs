@@ -1,8 +1,13 @@
+using System.IO;
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using System.ComponentModel.DataAnnotations;
 using COMMON_PROJECT_STRUCTURE_API.services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.DependencyInjection;
 
 WebHost.CreateDefaultBuilder(args)
     .ConfigureServices(services =>
@@ -17,23 +22,41 @@ WebHost.CreateDefaultBuilder(args)
         services.AddAuthorization();
         services.AddControllers();
         services.AddCors();
-        services.AddAuthentication("SourceJWT").AddScheme<SourceJwtAuthenticationSchemeOptions, SourceJwtAuthenticationHandler>("SourceJWT", options =>
-        {
-            options.SecretKey = appsettings["jwt_config:Key"].ToString();
-            options.ValidIssuer = appsettings["jwt_config:Issuer"].ToString();
-            options.ValidAudience = appsettings["jwt_config:Audience"].ToString();
-            options.Subject = appsettings["jwt_config:Subject"].ToString();
-        });
+
+        // Configure JWT authentication
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = appsettings["jwt_config:Issuer"].ToString(),
+                    ValidAudience = appsettings["jwt_config:Audience"].ToString(),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appsettings["jwt_config:Key"].ToString())),
+                };
+            });
     })
+    //     services.AddAuthentication("SourceJWT").AddScheme<SourceJwtAuthenticationSchemeOptions, SourceJwtAuthenticationHandler>("SourceJWT", options =>
+    //        {
+    //            options.SecretKey = appsettings["jwt_config:Key"].ToString();
+    //            options.ValidIssuer = appsettings["jwt_config:Issuer"].ToString();
+    //            options.ValidAudience = appsettings["jwt_config:Audience"].ToString();
+    //            options.Subject = appsettings["jwt_config:Subject"].ToString();
+    //        });
+    // })
     .Configure(app =>
     {
-        app.UseAuthentication();
-        app.UseAuthorization();
         app.UseCors(options =>
             options.WithOrigins("https://localhost:5002", "http://localhost:5001")
             .AllowAnyHeader().AllowAnyMethod().AllowCredentials());
         app.UseRouting();
         app.UseStaticFiles();
+
+        // Use authentication and authorization middleware
+        app.UseAuthentication();
+        app.UseAuthorization();
 
         app.UseEndpoints(endpoints =>
         {
@@ -44,14 +67,13 @@ WebHost.CreateDefaultBuilder(args)
             var deleteProfile = endpoints.ServiceProvider.GetRequiredService<deleteProfile>();
 
             endpoints.MapGet("/login",
-           [AllowAnonymous] async (HttpContext http) =>
-           {
-               var body = await new StreamReader(http.Request.Body).ReadToEndAsync();
-               requestData rData = JsonSerializer.Deserialize<requestData>(body);
-               if (rData.eventID == "1001") // update
-                   await http.Response.WriteAsJsonAsync(await login.Login(rData));
-
-           });
+            [AllowAnonymous] async (HttpContext http) =>
+            {
+                var body = await new StreamReader(http.Request.Body).ReadToEndAsync();
+                requestData rData = JsonSerializer.Deserialize<requestData>(body);
+                if (rData.eventID == "1001") // update
+                    await http.Response.WriteAsJsonAsync(await login.Login(rData));
+            }).RequireAuthorization();
 
             endpoints.MapPost("register",
             [AllowAnonymous] async (HttpContext http) =>
@@ -60,8 +82,8 @@ WebHost.CreateDefaultBuilder(args)
                 requestData rData = JsonSerializer.Deserialize<requestData>(body);
                 if (rData.eventID == "1002") // update
                     await http.Response.WriteAsJsonAsync(await register.Register(rData));
+            }).RequireAuthorization();
 
-            });
             endpoints.MapPut("editProfile",
             [AllowAnonymous] async (HttpContext http) =>
             {
