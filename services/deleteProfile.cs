@@ -19,23 +19,29 @@ namespace COMMON_PROJECT_STRUCTURE_API.services
             {
                 MySqlParameter[] para = new MySqlParameter[]
                 {
-                    new MySqlParameter("@UserId", req.addInfo["UserId"].ToString())
+                    new MySqlParameter("@UserId", req.addInfo["UserId"].ToString()),
+                    new MySqlParameter("@UserPassword", req.addInfo["UserPassword"].ToString())
                 };
 
-                var deleteSql = @"DELETE FROM pc_student.Ak_register WHERE UserId = @UserId";
+                var deleteSql = @"DELETE FROM pc_student.Ak_register WHERE UserId = @UserId AND UserPassword = @UserPassword";
 
-                var rowsAffected = ds.ExecuteInsertAndGetLastId(deleteSql, para);
+                var rowsAffected = ds.ExecuteSQLName(deleteSql, para);
 
-                if (rowsAffected > 0)
+                if (rowsAffected != null && rowsAffected.Count > 0)
                 {
                     resData.eventID = req.eventID;
                     resData.rData["rCode"] = 0;
                     resData.rData["rMessage"] = "Profile deleted successfully";
                 }
-                else
+                else if (rowsAffected == null)
                 {
                     resData.rData["rCode"] = 2;
                     resData.rData["rMessage"] = "No records deleted";
+                }
+                else
+                {
+                    resData.rData["rCode"] = 3;
+                    resData.rData["rMessage"] = "Invalid credentials";
                 }
             }
             catch (Exception ex)
