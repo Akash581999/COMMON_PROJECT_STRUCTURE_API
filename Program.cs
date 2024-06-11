@@ -23,13 +23,7 @@ WebHost.CreateDefaultBuilder(args)
 
         services.AddAuthorization();
         services.AddControllers();
-        services.AddCors(options =>
-        {
-            options.AddPolicy("AllowReactApp",
-                builder => builder.WithOrigins("http://localhost:3000") // Adjust the URL to match your React app's URL
-                    .AllowAnyHeader()
-                    .AllowAnyMethod());
-        });
+        services.AddCors();
 
         // Configure JWT authentication
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -56,7 +50,6 @@ WebHost.CreateDefaultBuilder(args)
     // })
     .Configure(app =>
     {
-        app.UseCors("AllowReactApp");
         app.UseCors(options =>
             options.WithOrigins("https://localhost:5002", "http://localhost:5001")
             .AllowAnyHeader().AllowAnyMethod().AllowCredentials());
