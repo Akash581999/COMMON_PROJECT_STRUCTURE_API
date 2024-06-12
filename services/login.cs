@@ -62,12 +62,12 @@ namespace COMMON_PROJECT_STRUCTURE_API.services
                 if (data == null || data[0].Count() == 0)
                 {
                     resData.rData["rCode"] = 1;
-                    resData.rData["rMessage"] = "Invalid Credentials";
+                    resData.rData["rMessage"] = "Invalid Credentials!!";
                 }
                 else
                 {
                     resData.rData["rCode"] = 0;
-                    resData.rData["rMessage"] = "Login Successfully";
+                    resData.rData["rMessage"] = "Login Successfully!!";
                 }
             }
             catch (Exception ex)

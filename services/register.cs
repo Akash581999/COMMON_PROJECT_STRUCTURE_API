@@ -19,30 +19,30 @@ namespace COMMON_PROJECT_STRUCTURE_API.services
             try
             {
                 MySqlParameter[] para = new MySqlParameter[] {
-            new MySqlParameter("@UserId", req.addInfo["UserId"].ToString()),
-            new MySqlParameter("@ROLE_ID", req.addInfo["ROLE_ID"].ToString()),
-            new MySqlParameter("@UserPassword", req.addInfo["UserPassword"].ToString()),
+            // new MySqlParameter("@UserId", req.addInfo["UserId"].ToString()),
+            // new MySqlParameter("@ROLE_ID", req.addInfo["ROLE_ID"].ToString()),
             new MySqlParameter("@FirstName", req.addInfo["FirstName"].ToString()),
             new MySqlParameter("@LastName", req.addInfo["LastName"].ToString()),
             new MySqlParameter("@EMAIL_ID", req.addInfo["EMAIL_ID"].ToString()),
-            new MySqlParameter("@MOBILE_NO", req.addInfo["MOBILE_NO"].ToString())
+            new MySqlParameter("@MOBILE_NO", req.addInfo["MOBILE_NO"].ToString()),
+            new MySqlParameter("@UserPassword", req.addInfo["UserPassword"].ToString())
         };
                 var checkSql = $"SELECT * FROM pc_student.Ak_register WHERE MOBILE_NO=@MOBILE_NO OR EMAIL_ID=@EMAIL_ID;";
                 var checkResult = ds.executeSQL(checkSql, para);
                 if (checkResult[0].Count() != 0)
                 {
                     resData.rData["rCode"] = 2;
-                    resData.rData["rMessage"] = "Duplicate data found";
+                    resData.rData["rMessage"] = "User already registered, Try Login in!!";
                 }
                 else
                 {
-                    var insertSql = $"INSERT INTO pc_student.Ak_register (UserId, ROLE_ID, UserPassword, FirstName, LastName, EMAIL_ID, MOBILE_NO) VALUES(@UserId, @ROLE_ID, @UserPassword, @FirstName, @LastName, @EMAIL_ID, @MOBILE_NO);";
+                    var insertSql = $"INSERT INTO pc_student.Ak_register (UserPassword, FirstName, LastName, EMAIL_ID, MOBILE_NO) VALUES(@UserPassword, @FirstName, @LastName, @EMAIL_ID, @MOBILE_NO);";
                     var insertId = ds.ExecuteInsertAndGetLastId(insertSql, para);
 
                     if (insertId != null)
                     {
                         resData.eventID = req.eventID;
-                        resData.rData["rMessage"] = "Registration Successfully";
+                        resData.rData["rMessage"] = "Account created successfully";
                     }
                 }
             }
@@ -50,7 +50,6 @@ namespace COMMON_PROJECT_STRUCTURE_API.services
             {
                 resData.rData["rCode"] = 1;
                 resData.rData["rMessage"] = $"Error: {ex.Message}";
-
             }
             return resData;
         }

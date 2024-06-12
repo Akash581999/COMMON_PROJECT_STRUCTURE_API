@@ -52,7 +52,7 @@ WebHost.CreateDefaultBuilder(args)
     {
         app.UseCors(options =>
             options.WithOrigins("https://localhost:5002", "http://localhost:5001")
-            .AllowAnyHeader().AllowAnyMethod().AllowCredentials());
+            .AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
         app.UseRouting();
         app.UseStaticFiles();
 
@@ -69,7 +69,7 @@ WebHost.CreateDefaultBuilder(args)
             var resetPassword = endpoints.ServiceProvider.GetService<resetPassword>();
             var deleteProfile = endpoints.ServiceProvider.GetRequiredService<deleteProfile>();
 
-            endpoints.MapGet("/login",
+            endpoints.MapPost("/login",
             [AllowAnonymous] async (HttpContext http) =>
             {
                 var body = await new StreamReader(http.Request.Body).ReadToEndAsync();
